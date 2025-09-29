@@ -1,0 +1,81 @@
+-- Sample ESQL file for message transformation
+-- Save this as sample_transform.esql
+
+BROKER SCHEMA sample
+
+CREATE COMPUTE MODULE MessageTransformation
+    CREATE FUNCTION Main() RETURNS BOOLEAN
+    BEGIN
+        -- Declare variables
+        DECLARE messageRef REFERENCE TO InputRoot.XMLNSC.*[1];
+        DECLARE outputRef REFERENCE TO OutputRoot;
+        
+        -- Set output message properties
+        SET OutputRoot.MQMD = InputRoot.MQMD;
+        SET OutputRoot.MQMD.Format = 'MQSTR';
+        
+        -- Create XML output structure
+        CREATE FIELD OutputRoot.XMLNSC.TransformedMessage;
+        SET outputRef = OutputRoot.XMLNSC.TransformedMessage;
+        
+        -- Transform customer data
+        IF EXISTS(messageRef.Customer[]) THEN
+            SET outputRef.CustomerInfo.ID = messageRef.Customer.CustomerID;
+            SET outputRef.CustomerInfo.Name = messageRef.Customer.FirstName || ' ' || messageRef.Customer.LastName;
+            SET outputRef.CustomerInfo.Email = messageRef.Customer.Email;
+            SET outputRef.CustomerInfo.Phone = messageRef.Customer.PhoneNumber;
+        END IF;
+        
+        -- Transform order information
+        IF EXISTS(messageRef.Order[]) THEN
+            SET outputRef.OrderDetails.OrderNumber = messageRef.Order.OrderID;
+            SET outputRef.OrderDetails.OrderDate = messageRef.Order.Date;
+            SET outputRef.OrderDetails.TotalAmount = messageRef.Order.Total;
+            SET outputRef.OrderDetails.Status = 'PROCESSED';
+        END IF;
+        
+        -- Add timestamp
+        SET outputRef.ProcessingInfo.Timestamp = CURRENT_TIMESTAMP;
+        SET outputRef.ProcessingInfo.ProcessedBy = 'ESQL_Transformer';
+        
+        RETURN TRUE;
+    END;
+END MODULE;
+
+-- Function for data validation
+CREATE FUNCTION ValidateCustomerData(IN customerData REFERENCE) RETURNS BOOLEAN
+BEGIN
+    DECLARE isValid BOOLEAN DEFAULT TRUE;
+    
+    -- Check if customer ID exists
+    IF customerData.CustomerID IS NULL OR customerData.CustomerID = '' THEN
+        SET isValid = FALSE;
+    END IF;
+    
+    -- Validate email format (basic check)
+    IF customerData.Email IS NOT NULL AND 
+       POSITION('@' IN customerData.Email) = 0 THEN
+        SET isValid = FALSE;
+    END IF;
+    
+    RETURN isValid;
+END;
+
+-- Procedure for logging
+CREATE PROCEDURE LogTransformation(IN logLevel CHARACTER, IN message CHARACTER)
+BEGIN
+    -- Log the transformation activity
+    DECLARE logEntry REFERENCE TO Environment.TransformationLog;
+    
+    IF NOT EXISTS(Environment.TransformationLog[]) THEN
+        CREATE FIELD Environment.TransformationLog;
+        SET logEntry = Environment.TransformationLog;
+        CREATE FIELD logEntry.Entries IDENTITY(JSON.Array);
+    END IF;
+    
+    SET logEntry = Environment.TransformationLog;
+    CREATE LASTCHILD OF logEntry.Entries TYPE JSON.Object;
+    SET logEntry.Entries[<].Level = logLevel;
+    SET logEntry.Entries[<].Message = message;
+    SET logEntry.Entries[<].Timestamp = CURRENT_TIMESTAMP;
+END;
