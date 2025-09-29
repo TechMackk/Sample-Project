@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://esql.conversion.schema"
+           xmlns:tns="http://esql.conversion.schema"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified">
+    
+    <!-- Generated from ESQL file: input.esql -->
+    <!-- Generated on: 2025-09-29T11:43:23.299Z -->
+    
+    <!-- Root element definition -->
+    <xs:element name="TransformedMessage" type="tns:TransformedMessageType"/>
+    
+    <!-- Main complex type for transformed message -->
+    <xs:complexType name="TransformedMessageType">
+        <xs:sequence>
+            <xs:element name="Header" type="tns:HeaderType" minOccurs="0"/>
+            <xs:element name="Body" type="tns:BodyType" minOccurs="0"/>
+            <xs:element name="ProcessingInfo" type="tns:ProcessingInfoType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Header type definition -->
+    <xs:complexType name="HeaderType">
+        <xs:sequence>
+            <xs:element name="MessageID" type="xs:string" minOccurs="0"/>
+            <xs:element name="Timestamp" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="Source" type="xs:string" minOccurs="0"/>
+            <xs:element name="Destination" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Processing info type -->
+    <xs:complexType name="ProcessingInfoType">
+        <xs:sequence>
+            <xs:element name="Timestamp" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="ProcessedBy" type="xs:string" minOccurs="0"/>
+            <xs:element name="Status" type="tns:ProcessingStatusType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Processing status enumeration -->
+    <xs:simpleType name="ProcessingStatusType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SUCCESS"/>
+            <xs:enumeration value="PROCESSING"/>
+            <xs:enumeration value="ERROR"/>
+            <xs:enumeration value="COMPLETED"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Body type definition -->
+    <xs:complexType name="BodyType">
+        <xs:sequence>
+            <xs:element name="ProcessingResult" type="xs:string" minOccurs="0"/>
+            <xs:element name="ProcessedElements" type="xs:integer" minOccurs="0"/>
+            <xs:element name="CustomerInfo" type="tns:CustomerInfoType" minOccurs="0"/>
+            <xs:element name="OrderDetails" type="tns:OrderDetailsType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Customer info type -->
+    <xs:complexType name="CustomerInfoType">
+        <xs:sequence>
+            <xs:element name="ID" type="xs:string" minOccurs="0"/>
+            <xs:element name="Name" type="xs:string" minOccurs="0"/>
+            <xs:element name="Email" type="xs:string" minOccurs="0"/>
+            <xs:element name="Phone" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Order details type -->
+    <xs:complexType name="OrderDetailsType">
+        <xs:sequence>
+            <xs:element name="OrderNumber" type="xs:string" minOccurs="0"/>
+            <xs:element name="OrderDate" type="xs:date" minOccurs="0"/>
+            <xs:element name="TotalAmount" type="xs:decimal" minOccurs="0"/>
+            <xs:element name="Status" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
